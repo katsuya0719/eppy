@@ -8,3 +8,5 @@ __pycache__
 .pydevproject
 .settings/
 /remove_licence.py
+.cache/
+.coverage
