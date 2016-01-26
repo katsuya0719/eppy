@@ -33,6 +33,9 @@ sh 2to3sh.sh
 pyvenv ~/venvs/eppy3
 source ~/venvs/eppy3/bin/activate
 
+pyvenv ~/venvs/eppy3_nonumpy
+source ~/venvs/eppy3_nonumpy/bin/activate
+
 pip install
 bunch>=1.0 
 beautifulsoup4>=4.2.1
@@ -97,6 +100,9 @@ source ~/venvs/eppy3_nonumpy/bin/activate
 
 pyvenv ~/venvs/mpss2
 source ~/venvs/mpss2/bin/activate
+
+# pyvenv /path/to/new/virtual/environment
+pyvenv ~/venvs/eppy3/bin/activate
 
 2to3 -wno p3 merge.py
 this will 2to3 merge.py and put it in folder p3
