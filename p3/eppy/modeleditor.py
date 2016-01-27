@@ -155,7 +155,8 @@ def getobject(bunchdt, key, name):
     """get the object if you have the key and the name
     returns a list of objects, in case you have more than one
     You should not have more than one"""
-    # TODO : throw exception if more than one object, or return more objects    idfobjects = bunchdt[key]
+    # TODO : throw exception if more than one object, or return more objects
+    idfobjects = bunchdt[key]
     if idfobjects:
         unique_id = idfobjects[0].objls[1] # second item in list is a unique ID
     theobjs = [idfobj for idfobj in idfobjects if

@@ -38,8 +38,8 @@ certain features may not be supported.
 # todo: logspace, meshgrid
 # todo: Fortran order?
 
-from __future__ import division
-from __future__ import absolute_import
+
+
 
 import sys
 import ctypes
@@ -173,7 +173,7 @@ def _assign_from_object(array, obj):
 
 
 def _increment_mutable_key(key, shape):
-    for axis in reversed(xrange(len(shape))):
+    for axis in reversed(range(len(shape))):
         key[axis] += 1
         if key[axis] < shape[axis]:
             return True
@@ -196,7 +196,7 @@ def _key_for_index(index, shape):
 
 
 def _zerositer(n):
-    for i in xrange(n):
+    for i in range(n):
         yield 0
 
 
@@ -300,7 +300,7 @@ def eye(size):
     diagonal and zeros elsewhere.
     """
     a = zeros((size,size))
-    for i in xrange(size):
+    for i in range(size):
         a[i,i] = 1
     return a
 
@@ -342,7 +342,7 @@ def arange(*args, **kwargs):
     else:
         raise TypeError('Too many input arguments')
     # Init
-    iter = xrange(start, stop, step)
+    iter = range(start, stop, step)
     a = empty((len(iter),), dtype=dtype)
     a[:] = list(iter)
     return a
@@ -364,7 +364,7 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None):
         step = ra / num
     # Create
     a = empty((num,), dtype)
-    a[:] = [start + i * step for i in xrange(num)]
+    a[:] = [start + i * step for i in range(num)]
     # Return
     if retstep:
         return a, step
@@ -716,7 +716,7 @@ class ndarray(object):
             axisindent = min(2, max(0, (self.ndim - axis - 1)))
             if axis < len(self.shape):
                 s += '['
-                for k_index, k in enumerate(xrange(self.shape[axis])):
+                for k_index, k in enumerate(range(self.shape[axis])):
                     if k_index > 0:
                         s += ('\n       ' + ' ' * axis)  * axisindent
                     offset_ = offset + k * self._strides[axis] // self.itemsize
@@ -961,7 +961,7 @@ class ndarray(object):
     
     def repeat(self, repeats, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         out = empty((self.size * repeats,), self.dtype)
         for i in range(repeats):
             out[i*self.size:(i+1)*self.size] = self
@@ -986,11 +986,11 @@ class ndarray(object):
         out = empty(shape, self.dtype)
         #
         if ndim == 2:
-            for i in xrange(self.shape[0]):
+            for i in range(self.shape[0]):
                 out[:, i] = self[i, :]
         elif ndim == 3:
-            for i in xrange(self.shape[0]):
-                for j in xrange(self.shape[1]):
+            for i in range(self.shape[0]):
+                for j in range(self.shape[1]):
                     out[:, j, i] = self[i, j, :]
         else:
             raise ValueError('Tinynumpy supports transpose up to ndim=3')
@@ -1022,33 +1022,33 @@ class ndarray(object):
     
     def all(self, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         return all(self.flat)
     
     def any(self, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         return any(self.flat)
     
     def min(self, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         return min(self.flat)
     
     def max(self, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         return max(self.flat)
         #return max(self._toflatlist())  # almost twice as fast
     
     def sum(self, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         return sum(self.flat)
     
     def prod(self, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         p = 1.0
         for i in self.flat:
             p *= float(i)
@@ -1056,7 +1056,7 @@ class ndarray(object):
         
     def ptp(self, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         mn = self.data[self._offset]
         mx = mn
         for i in self.flat:
@@ -1068,12 +1068,12 @@ class ndarray(object):
 
     def mean(self, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         return self.sum() / self.size
     
     def argmax(self, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         r = self.data[self._offset]
         r_index = 0
         for i_index, i in enumerate(self.flat):
@@ -1084,7 +1084,7 @@ class ndarray(object):
 
     def argmin(self, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         r = self.data[self._offset]
         r_index = 0
         for i_index, i in enumerate(self.flat):
@@ -1095,7 +1095,7 @@ class ndarray(object):
     
     def cumprod(self, axis=None, out=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         if out is None:
             out = empty((self.size,), self.dtype)
         p = 1
@@ -1108,7 +1108,7 @@ class ndarray(object):
 
     def cumsum(self, axis=None, out=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         if out is None:
             out = empty((self.size,), self.dtype)
         p = 0
@@ -1121,7 +1121,7 @@ class ndarray(object):
 
     def var(self, axis=None):
         if axis:
-            raise (TypeError, "axis argument is not supported")
+            raise TypeError
         m = self.mean()
         acc = 0
         for x in self.flat:
@@ -1154,5 +1154,5 @@ class nditer:
             self.key = None
         return value
 
-    def next(self):
+    def __next__(self):
         return self.__next__()

@@ -5,6 +5,9 @@ updated notes on publishing the documentation.
 1. main docs
 - ipython notebook to make the docs in ./docs
 - ipython nbconvert --to rst ../*.ipynb # run from ./docs/source
+or
+- jupyter nbconvert --to rst ../*.ipynb # run from ./docs/source
+jupyter nbconvert ../newfunctions.ipynb --to rst# 
 - put the rst file names in index.rst
 
 2. developer docs
