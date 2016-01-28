@@ -181,6 +181,7 @@ def run(idf=None, weather=None, output_directory='run_outputs', annual=False,
 
     try:
         if verbose == 'v':
+            print(cmd)
             check_call(cmd)
         elif verbose == 'q':
             check_call(cmd, stdout=open(os.devnull, 'w'))
