@@ -2,7 +2,17 @@
 *.pyc
 .DS_Store
 .ipynb_checkpoints/
+<<<<<<< HEAD
 __pycache__
 # 
 .cache/
 .coverage
+=======
+.cache
+__pycache__
+# Eclipse/PyDev
+.project
+.pydevproject
+.settings/
+/remove_licence.py
+>>>>>>> 609f5c40a8c4cdd8aec256f801be8127e5a09d72
