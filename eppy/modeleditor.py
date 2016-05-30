@@ -16,7 +16,9 @@ import copy
 import os
 import platform
 
+
 from eppy.idfreader import idfreader1
+from eppy.idfreader import addfunctions2new
 from eppy.idfreader import makeabunch
 
 import eppy.function_helpers as function_helpers
@@ -575,6 +577,7 @@ class IDF1(IDF0):
         self.idfobjects[key].append(abunch)
         for k, v in kwargs.items():
             abunch[k] = v
+        abunch = addfunctions2new(abunch, key)
         return abunch
 
     def popidfobject(self, key, index):
