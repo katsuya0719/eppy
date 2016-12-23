@@ -11,6 +11,17 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from six import StringIO
+
+from eppy.iddcurrent import iddcurrent
+from eppy.modeleditor import IDF
+
+iddsnippet = iddcurrent.iddtxt
+iddfhandle = StringIO(iddsnippet)
+
+
+if IDF.getiddname() == None:
+    IDF.setiddname(iddfhandle)
 
 from eppy.EPlusInterfaceFunctions import iddindex
 
@@ -448,4 +459,12 @@ def test_ref2names2commdct():
                     assert id(ref2names[reference]) == id(validobjects)
                 except KeyError as e:
                     continue
+    
+def test_indexkeys():
+    """py.test to test if index has been created, by reading a file"""
+    idf1 = IDF(StringIO(""))
+    assert idf1.idd_index
+    # idd_index was getting set {} on the second read. Test that below
+    idf2 = IDF(StringIO(""))
+    assert idf2.idd_index
     
