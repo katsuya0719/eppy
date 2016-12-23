@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>New Developments &mdash; eppy 0.5.41 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.5.41',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="eppy 0.5.41 documentation" href="../index.html" />
+    <link rel="up" title="Developer Documentation for eppy" href="index.html" />
+    <link rel="next" title="LICENSE" href="../LICENSE.html" />
+    <link rel="prev" title="Documenting eppy" href="doc_eppy.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../LICENSE.html" title="LICENSE"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="doc_eppy.html" title="Documenting eppy"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">eppy 0.5.41 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Developer Documentation for eppy</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="new-developments">
+<h1>New Developments<a class="headerlink" href="#new-developments" title="Permalink to this headline">¶</a></h1>
+<p>This sections documents the latest developments in the core functionality. None of this affects the user experience. These functionalities simply make it easier to continue the further development of <cite>eppy</cite>.</p>
+<p>The plan is to write all the documentation here as a place holder. Then later find more logical location in the overall developer developer documentation.</p>
+<div class="section" id="epbunch-new-functions-fields">
+<h2>EpBunch -&gt; new functions &amp; fields<a class="headerlink" href="#epbunch-new-functions-fields" title="Permalink to this headline">¶</a></h2>
+<p>Most of these are helper fields and functions act as syntactic sugar and make it easier to get to some data points of the EpBunch. Just to remind ourself of of EpBunch:</p>
+<div class="highlight-python"><pre>zones = idf.idfobjects[&#x27;ZONE&#x27;]
+zone = zones[0]
+print type(zone)
+
+&lt;class &#x27;eppy.bunch_subclass.EpBunch&#x27;&gt;</pre>
+</div>
+<p>We can access the fields of <cite>zone</cite>:</p>
+<div class="highlight-python"><pre>print zone.Name, zone.Ceiling_Height
+
+PLENUM-1 0.609600067</pre>
+</div>
+<p>The following descrines the new functions and fields of zone. In effect it is the functions and fields of any EpBunch object</p>
+<div class="section" id="idfobj-theidf">
+<h3>idfobj.theidf<a class="headerlink" href="#idfobj-theidf" title="Permalink to this headline">¶</a></h3>
+<p>Sometimes we need to access other objects in the idf file. For instance, we have a construction object and want to acces the materials that make up the construction object. To do that we need to access the idf file that the construction object belongs to. We can do this by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">construction</span><span class="o">.</span><span class="n">theidf</span>
+</pre></div>
+</div>
+<p>to make this more explicit:</p>
+<div class="highlight-python"><pre>constructions = idf.idfobjects[&#x27;construction&#x27;.upper()]
+construction = constructions[0]
+print construction
+
+Construction,
+    ROOF-1,                   !- Name
+    RG01,                     !- Outside Layer
+    BR01,                     !- Layer 2
+    IN46,                     !- Layer 3
+    WD01;                     !- Layer 4</pre>
+</div>
+<p>Let us try to get the material in <cite>Layer 2</cite>:</p>
+<div class="highlight-python"><pre>objects_idf = construction.theidf
+material = objects_idf.getobject(&#x27;material&#x27;.upper(), construction.Layer_2)
+print material
+
+Material,
+    BR01,                     !- Name
+    VeryRough,                !- Roughness
+    0.0094999997,             !- Thickness
+    0.162,                    !- Conductivity
+    1121.0,                   !- Density
+    1464.0,                   !- Specific Heat
+    0.9,                      !- Thermal Absorptance
+    0.7,                      !- Solar Absorptance
+    0.7;                      !- Visible Absorptance</pre>
+</div>
+<p>If the idfobject does not belong to an idf file then it will respond None:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">idfobject</span><span class="o">.</span><span class="n">theidf</span>
+
+<span class="bp">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="idfobj-objidd">
+<h3>idfobj.objidd<a class="headerlink" href="#idfobj-objidd" title="Permalink to this headline">¶</a></h3>
+<p>To get the idd of the object do the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">version</span> <span class="o">=</span> <span class="n">idf</span><span class="o">.</span><span class="n">idfobjects</span><span class="p">[</span><span class="s">&#39;version&#39;</span><span class="o">.</span><span class="n">upper</span><span class="p">()][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">objidd</span> <span class="o">=</span> <span class="n">version</span><span class="o">.</span><span class="n">objidd</span>
+<span class="k">print</span> <span class="n">objidd</span>
+
+<span class="p">[{</span><span class="s">u&#39;format&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">u&#39;singleLine&#39;</span><span class="p">],</span>
+  <span class="s">u&#39;group&#39;</span><span class="p">:</span> <span class="s">u&#39;Simulation Parameters&#39;</span><span class="p">,</span>
+  <span class="s">u&#39;idfobj&#39;</span><span class="p">:</span> <span class="s">u&#39;Version&#39;</span><span class="p">,</span>
+  <span class="s">u&#39;unique-object&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">u&#39;&#39;</span><span class="p">]},</span>
+ <span class="p">{</span><span class="s">u&#39;default&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">u&#39;7.0&#39;</span><span class="p">],</span>
+  <span class="s">u&#39;field&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">u&#39;Version Identifier&#39;</span><span class="p">],</span>
+  <span class="s">u&#39;required-field&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">u&#39;&#39;</span><span class="p">]}]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="idfobj-getfieldidd">
+<h3>idfobj.getfieldidd<a class="headerlink" href="#idfobj-getfieldidd" title="Permalink to this headline">¶</a></h3>
+<p><cite>getfieldidd</cite> gets the idd of a specific field. Let us work ourselves towards <cite>getfieldidd</cite>:</p>
+<div class="highlight-python"><pre>version = idf.idfobjects[&#x27;version&#x27;.upper()][0]
+print version
+
+Version,
+    7.0;                      !- Version Identifier
+
+print version.objls
+
+[u&#x27;key&#x27;, u&#x27;Version_Identifier&#x27;]
+
+print version.getfieldidd(&quot;key&quot;)
+
+{u&#x27;format&#x27;: [u&#x27;singleLine&#x27;],
+ u&#x27;group&#x27;: u&#x27;Simulation Parameters&#x27;,
+ u&#x27;idfobj&#x27;: u&#x27;Version&#x27;,
+ u&#x27;unique-object&#x27;: [u&#x27;&#x27;]}
+
+ print version.getfieldidd(&quot;Version_Identifier&quot;)
+
+ {u&#x27;default&#x27;: [u&#x27;7.0&#x27;],
+  u&#x27;field&#x27;: [u&#x27;Version Identifier&#x27;],
+  u&#x27;required-field&#x27;: [u&#x27;&#x27;]}</pre>
+</div>
+</div>
+</div>
+<div class="section" id="indexing-the-idd">
+<h2>Indexing the IDD<a class="headerlink" href="#indexing-the-idd" title="Permalink to this headline">¶</a></h2>
+<p>Eppy stores the information from the IDD file in IDF.idd_info. This information is pulled into eppy as soon as the first idf file is read.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">New Developments</a><ul>
+<li><a class="reference internal" href="#epbunch-new-functions-fields">EpBunch -&gt; new functions &amp; fields</a><ul>
+<li><a class="reference internal" href="#idfobj-theidf">idfobj.theidf</a></li>
+<li><a class="reference internal" href="#idfobj-objidd">idfobj.objidd</a></li>
+<li><a class="reference internal" href="#idfobj-getfieldidd">idfobj.getfieldidd</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indexing-the-idd">Indexing the IDD</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="doc_eppy.html"
+                        title="previous chapter">Documenting eppy</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../LICENSE.html"
+                        title="next chapter">LICENSE</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/dev_docs/new_devs.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../LICENSE.html" title="LICENSE"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="doc_eppy.html" title="Documenting eppy"
+             >previous</a> |</li>
+        <li><a href="../index.html">eppy 0.5.41 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Developer Documentation for eppy</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Santosh Philip.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b2.
+    </div>
+  </body>
+</html>
