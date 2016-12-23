@@ -527,6 +527,7 @@ class IDF(object):
     """
     iddname = None
     idd_info = None
+    idd_index = None
     block = None
 
     def __init__(self, idfname=None):
@@ -566,6 +567,7 @@ class IDF(object):
         if cls.iddname == None:
             cls.iddname = iddname
             cls.idd_info = None
+            cls.idd_index = None
             cls.block = None
         elif cls.iddname == iddname:
             pass
@@ -660,7 +662,7 @@ class IDF(object):
             raise IDDNotSetError(errortxt)
         readout = idfreader1(
             self.idfname, self.iddname, self,
-            commdct=self.idd_info, block=self.block)
+            commdct=self.idd_info, block=self.block, idd_index=self.idd_index)
         self.idfobjects, block, self.model, idd_info, idd_index = readout
         self.__class__.setidd(idd_info, idd_index, block)
 

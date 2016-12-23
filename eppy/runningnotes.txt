@@ -1,5 +1,23 @@
 rsync -av --exclude=".*" eplusinterface_diagrams/ ./eppy_0_4_0 # leave this line at top
 
+2016-12-22
+----------
+- looks like there is an error in idd_index
+- it gets reset to {} when the second idf file is read FIXED
+
+2016-12-22
+----------
+- starting the documentation for the changes shown below.
+- start a new chapter and put all the documentation there.
+- later separate into more logical locations.
+- sections:
+    - idfobj.theidd
+    - idfobj.objidd
+    - idfobj.getfieldidd
+    - IDF.idd_index
+    - idfobj.get_referenced_object
+    - idfobj.getreferingobjs
+    - idfobj.getfieldidd_item
 2016-07-20
 ----------
 documentation for changes in IDF.idd_info and other stuff;

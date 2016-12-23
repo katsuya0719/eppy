@@ -81,13 +81,12 @@ def readdatacommdct(idfname, iddfile='Energy+.idd', commdct=None):
 
 def readdatacommdct1(
         idfname, iddfile='Energy+.idd',
-        commdct=None, block=None):
+        commdct=None, block=None, idd_index=None):
     """read the idf file"""
     if not commdct:
         block, commlst, commdct, idd_index = parse_idd.extractidddata(iddfile)
         theidd = eplusdata.Idd(block, 2)
     else:
         theidd = eplusdata.Idd(block, 2)
-        idd_index = {} # it should not get here :-(
     data = eplusdata.Eplusdata(theidd, idfname)
     return block, data, commdct, idd_index
