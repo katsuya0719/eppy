@@ -262,11 +262,24 @@ Now let us work in the reverse direction and see what objects use this Material:
         WD01;                     !- Layer 4
     ]
     
-Note that *getreferingobjs* returns a list, since more than one construction can use the material. This function works slowly since the search in this direction is not indexed and it has to search through the entire file
+Note that *getreferingobjs* returns a list, since more than one construction can use the material. This function works slowly since the search in this direction is not indexed and it has to search through the entire idf file
 
 Editing Note
 ------------
 
 A lot of the above sections should not be in developer documentation. It should be in a new chapter in the user documentation called *Advanced Functionality*. Developer documentation should show how it is implemented.
 
+Weppy Functions
+---------------
 
+The following functions were written to facilitate the development of **weppy** the experimental web interface for *eppy*. They are not in their final form yet, so this is only a provisional documentation. The functions are now in eppy.idf_helper
+
+idfobjectkeys(idf)
+~~~~~~~~~~~~~~~~~~
+
+Returns the object keys in the order they were in the IDD file it is an ordered list of idf.idfobjects.keys(). The keys of a dict are unordered, so idf.idfobjects.keys() will not work for this purpose
+    
+getanymentions(idf, anidfobject)
+~~~~~~~~~~~~~~~~~~~
+
+Find out if anidjobject is mentioned in any field of  any object anywhere in the idf file and returns a list of all such objects that do the mentionling

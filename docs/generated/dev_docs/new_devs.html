@@ -293,6 +293,18 @@ Construction,
 <h2>Editing Note<a class="headerlink" href="#editing-note" title="Permalink to this headline">¶</a></h2>
 <p>A lot of the above sections should not be in developer documentation. It should be in a new chapter in the user documentation called <em>Advanced Functionality</em>. Developer documentation should show how it is implemented.</p>
 </div>
+<div class="section" id="weppy-functions">
+<h2>Weppy Functions<a class="headerlink" href="#weppy-functions" title="Permalink to this headline">¶</a></h2>
+<p>The following functions were written to facilitate the development of <strong>weppy</strong> the experimental web interface for <em>eppy</em>. They are not in their final form yet, so this is only a provisional documentation. The functions are now in eppy.idf_helper</p>
+<div class="section" id="idfobjectkeys-idf">
+<h3>idfobjectkeys(idf)<a class="headerlink" href="#idfobjectkeys-idf" title="Permalink to this headline">¶</a></h3>
+<p>Returns the object keys in the order they were in the IDD file it is an ordered list of idf.idfobjects.keys(). The keys of a dict are unordered, so idf.idfobjects.keys() will not work for this purpose</p>
+</div>
+<div class="section" id="getanymentions-idf-anidfobject">
+<h3>getanymentions(idf, anidfobject)<a class="headerlink" href="#getanymentions-idf-anidfobject" title="Permalink to this headline">¶</a></h3>
+<p>Find out if anidjobject is mentioned in any field of  any object anywhere in the idf file and returns a list of all such objects that do the mentionling</p>
+</div>
+</div>
 </div>
 
 
@@ -317,6 +329,11 @@ Construction,
 </ul>
 </li>
 <li><a class="reference internal" href="#editing-note">Editing Note</a></li>
+<li><a class="reference internal" href="#weppy-functions">Weppy Functions</a><ul>
+<li><a class="reference internal" href="#idfobjectkeys-idf">idfobjectkeys(idf)</a></li>
+<li><a class="reference internal" href="#getanymentions-idf-anidfobject">getanymentions(idf, anidfobject)</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

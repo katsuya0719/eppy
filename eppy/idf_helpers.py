@@ -27,7 +27,7 @@ def idfobjectkeys(idf):
     return idf.model.dtls
     
 def getanymentions(idf, anidfobject):
-    """Find out if idjobject is mentioned an any object anywhere"""
+    """Find out if anidjobject is mentioned in any field of  any object anywhere in the idf file and returns a list of all such objects that do the mentionling"""
     name = anidfobject.obj[1]
     foundobjs = []
     keys = idfobjectkeys(idf)
