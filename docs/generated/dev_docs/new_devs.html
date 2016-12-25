@@ -53,6 +53,7 @@
             
   <div class="section" id="new-developments">
 <h1>New Developments<a class="headerlink" href="#new-developments" title="Permalink to this headline">¶</a></h1>
+<p><strong>This is largely placeholder documentation - put down as a first step to figuring out how to express it well</strong></p>
 <p>This sections documents the latest developments in the core functionality. None of this affects the user experience. These functionalities simply make it easier to continue the further development of <cite>eppy</cite>.</p>
 <p>The plan is to write all the documentation here as a place holder. Then later find more logical location in the overall developer developer documentation.</p>
 <div class="section" id="epbunch-new-functions-fields">
@@ -137,7 +138,7 @@ print version
 Version,
     7.0;                      !- Version Identifier
 
-print version.objls
+print version.fieldnames
 
 [u&#x27;key&#x27;, u&#x27;Version_Identifier&#x27;]
 
@@ -155,10 +156,142 @@ print version.getfieldidd(&quot;key&quot;)
   u&#x27;required-field&#x27;: [u&#x27;&#x27;]}</pre>
 </div>
 </div>
+<div class="section" id="idfobj-getfieldidd-item">
+<h3>idfobj.getfieldidd_item<a class="headerlink" href="#idfobj-getfieldidd-item" title="Permalink to this headline">¶</a></h3>
+<p><cite>getfieldidd_item</cite> will return the attribute of the field. Let us continue with the variable version from the example above:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">version</span><span class="o">.</span><span class="n">getfieldidd</span><span class="p">(</span><span class="s">&quot;Version_Identifier&quot;</span><span class="p">)</span>
+
+<span class="p">{</span><span class="s">u&#39;default&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">u&#39;7.0&#39;</span><span class="p">],</span>
+<span class="s">u&#39;field&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">u&#39;Version Identifier&#39;</span><span class="p">],</span>
+<span class="s">u&#39;required-field&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">u&#39;&#39;</span><span class="p">]}</span>
+
+<span class="k">print</span> <span class="n">version</span><span class="o">.</span><span class="n">getfieldidd_item</span><span class="p">(</span><span class="s">&#39;Version_Identifier&#39;</span><span class="p">,</span> <span class="s">&#39;default&#39;</span> <span class="p">)</span>
+
+<span class="p">[</span><span class="s">u&#39;7.0&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>If the field or attribute does not exist, it will return an empty list:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">version</span><span class="o">.</span><span class="n">getfieldidd_item</span><span class="p">(</span><span class="s">&#39;nosuchfield&#39;</span><span class="p">,</span> <span class="s">&#39;default&#39;</span> <span class="p">)</span>
+
+<span class="p">[]</span>
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="indexing-the-idd">
 <h2>Indexing the IDD<a class="headerlink" href="#indexing-the-idd" title="Permalink to this headline">¶</a></h2>
-<p>Eppy stores the information from the IDD file in IDF.idd_info. This information is pulled into eppy as soon as the first idf file is read.</p>
+<p>Eppy stores the information from the IDD file in IDF.idd_info. This information is pulled into eppy as soon as the first idf file is read. In essence it is a database of the IDD file. As it stands in idf.idd_info, it is an unindexed database. The items in the database are ordered, so some searches are easy, but other searches may be expensive since one may have to look through all items in the database.</p>
+<p>We are going to index this database gradually over time, starting with the things we need.</p>
+<p>We see the following snippets from the IDD file:</p>
+<div class="highlight-python"><pre>! Field-level comments:
+!
+----&lt;snip&gt;----
+!  \object-list     Name of a list of user-provided object names that are valid
+!                     entries for this field (used with &quot;\reference&quot;)
+!                     see Zone and BuildingSurface:Detailed objects below for
+!                     examples.
+!                  ** Note that a field may have multiple \object-list commands.
+----&lt;snip&gt;----
+!  \reference       Name of a list of names to which this object belongs
+!                     used with &quot;\type object-list&quot; and with &quot;\object-list&quot;
+!                     see Zone and BuildingSurface:Detailed objects below for
+!                     examples:
+!
+!                        Zone,
+!                          A1 , \field Name
+!                               \type alpha
+!                               \reference ZoneNames
+!
+!                        BuildingSurface:Detailed,
+!                          A4 , \field Zone Name
+!                               \note Zone the surface is a part of
+!                               \type object-list
+!                               \object-list ZoneNames
+!
+!             For each zone, the field &quot;Name&quot; may be referenced
+!             by other objects, such as BuildingSurface:Detailed, so it is
+!             commented with &quot;\reference ZoneNames&quot;
+!             Fields that reference a zone name, such as BuildingSurface:Detailed&#x27;s
+!             &quot;Zone Name&quot;, are commented as
+!             &quot;\type object-list&quot; and &quot;\object-list ZoneNames&quot;
+!             ** Note that a field may have multiple \reference commands.
+!             ** This is useful if the object belongs to a small specific
+!             object-list as well as a larger more general object-list.</pre>
+</div>
+<p>If you read the above, you see that there is a connection between the ZONE object and the BUILDINGSURFACE:DETAILED. Field <cite>Zone Name</cite> BUILDINGSURFACE:DETAILED in points to an object of type ZONE. So how do we find this ZONE object. Our steps would look something like this (playing a little fast and loose with the syntax)</p>
+<div class="highlight-python"><pre>BUILDINGSURFACE:DETAILED.Zone_Name.object-list --&gt; ZoneName
+
+If we search through all the objects we find that
+
+ZONE.Name.reference --&gt; ZoneNames</pre>
+</div>
+<p>The problem here is that we have to search through all the objects, which can be expensive. Eppy has an index that makes this quicker:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">idf</span><span class="o">.</span><span class="n">idd_index</span><span class="p">[</span><span class="s">&#39;ref2names&#39;</span><span class="p">][</span><span class="s">&#39;ZoneNames&#39;</span><span class="p">]</span>
+
+<span class="nb">set</span><span class="p">([</span><span class="s">u&#39;ZONE&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>the function <em>get_referenced_object</em> uses the indexing to function quickly</p>
+<p>Exploring further:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">idf</span><span class="o">.</span><span class="n">idd_index</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+<span class="p">[</span><span class="s">&#39;ref2names&#39;</span><span class="p">,</span> <span class="s">&#39;name2refs&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The other index <cite>name2refs</cite> turned out to be less useful than expected. We will ignore it for now</p>
+<p>Also ... the description in this section is badly written. Rewrite it later.</p>
+<p>Below are some functions that use indexing (or should use indexing)</p>
+<div class="section" id="idfobj-get-referenced-object">
+<h3>idfobj.get_referenced_object<a class="headerlink" href="#idfobj-get-referenced-object" title="Permalink to this headline">¶</a></h3>
+<p>Let us set up try this function:</p>
+<div class="highlight-python"><pre>construction = idf.idfobjects[&#x27;construction&#x27;.upper()][0]
+print construction
+
+Construction,
+    ROOF-1,                   !- Name
+    RG01,                     !- Outside Layer
+    BR01,                     !- Layer 2
+    IN46,                     !- Layer 3
+    WD01;                     !- Layer 4</pre>
+</div>
+<p>Now let us get the material in <em>Layer 2</em> using function get_referenced_object():</p>
+<div class="highlight-python"><pre>material = construction.get_referenced_object(u&#x27;Layer_2&#x27;)
+print material
+
+Material,
+    BR01,                     !- Name
+    VeryRough,                !- Roughness
+    0.0094999997,             !- Thickness
+    0.162,                    !- Conductivity
+    1121.0,                   !- Density
+    1464.0,                   !- Specific Heat
+    0.9,                      !- Thermal Absorptance
+    0.7,                      !- Solar Absorptance
+    0.7;                      !- Visible Absorptance</pre>
+</div>
+<p>This function works fast since the search in this direction is indexed</p>
+</div>
+<div class="section" id="idfobj-getreferingobjs">
+<h3>idfobj.getreferingobjs<a class="headerlink" href="#idfobj-getreferingobjs" title="Permalink to this headline">¶</a></h3>
+<p>Now let us work in the reverse direction and see what objects use this Material:</p>
+<div class="highlight-python"><pre>usedby = material.getreferingobjs()
+print usedby
+
+[
+Construction,
+    ROOF-1,                   !- Name
+    RG01,                     !- Outside Layer
+    BR01,                     !- Layer 2
+    IN46,                     !- Layer 3
+    WD01;                     !- Layer 4
+]</pre>
+</div>
+<p>Note that <em>getreferingobjs</em> returns a list, since more than one construction can use the material. This function works slowly since the search in this direction is not indexed and it has to search through the entire file</p>
+</div>
+</div>
+<div class="section" id="editing-note">
+<h2>Editing Note<a class="headerlink" href="#editing-note" title="Permalink to this headline">¶</a></h2>
+<p>A lot of the above sections should not be in developer documentation. It should be in a new chapter in the user documentation called <em>Advanced Functionality</em>. Developer documentation should show how it is implemented.</p>
 </div>
 </div>
 
@@ -175,9 +308,15 @@ print version.getfieldidd(&quot;key&quot;)
 <li><a class="reference internal" href="#idfobj-theidf">idfobj.theidf</a></li>
 <li><a class="reference internal" href="#idfobj-objidd">idfobj.objidd</a></li>
 <li><a class="reference internal" href="#idfobj-getfieldidd">idfobj.getfieldidd</a></li>
+<li><a class="reference internal" href="#idfobj-getfieldidd-item">idfobj.getfieldidd_item</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#indexing-the-idd">Indexing the IDD</a></li>
+<li><a class="reference internal" href="#indexing-the-idd">Indexing the IDD</a><ul>
+<li><a class="reference internal" href="#idfobj-get-referenced-object">idfobj.get_referenced_object</a></li>
+<li><a class="reference internal" href="#idfobj-getreferingobjs">idfobj.getreferingobjs</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#editing-note">Editing Note</a></li>
 </ul>
 </li>
 </ul>

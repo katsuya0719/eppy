@@ -1,6 +1,8 @@
 New Developments
 ================
 
+**This is largely placeholder documentation - put down as a first step to figuring out how to express it well**
+
 This sections documents the latest developments in the core functionality. None of this affects the user experience. These functionalities simply make it easier to continue the further development of `eppy`.
 
 The plan is to write all the documentation here as a place holder. Then later find more logical location in the overall developer developer documentation.
@@ -95,7 +97,7 @@ idfobj.getfieldidd
     Version,                  
         7.0;                      !- Version Identifier
     
-    print version.objls
+    print version.fieldnames
     
     [u'key', u'Version_Identifier']
     
@@ -112,9 +114,159 @@ idfobj.getfieldidd
       u'field': [u'Version Identifier'],
       u'required-field': [u'']}
       
+idfobj.getfieldidd_item
+~~~~~~~~~~~~~~~~~~~~~~~ 
+
+`getfieldidd_item` will return the attribute of the field. Let us continue with the variable version from the example above::
+
+
+    print version.getfieldidd("Version_Identifier")
+
+    {u'default': [u'7.0'],
+    u'field': [u'Version Identifier'],
+    u'required-field': [u'']}
+
+    print version.getfieldidd_item('Version_Identifier', 'default' )
+    
+    [u'7.0']
+
+If the field or attribute does not exist, it will return an empty list::
+
+    print version.getfieldidd_item('nosuchfield', 'default' )
+    
+    []
+    
+    
 Indexing the IDD
 ----------------
 
-Eppy stores the information from the IDD file in IDF.idd_info. This information is pulled into eppy as soon as the first idf file is read.       
-      
-      
+Eppy stores the information from the IDD file in IDF.idd_info. This information is pulled into eppy as soon as the first idf file is read. In essence it is a database of the IDD file. As it stands in idf.idd_info, it is an unindexed database. The items in the database are ordered, so some searches are easy, but other searches may be expensive since one may have to look through all items in the database.
+
+We are going to index this database gradually over time, starting with the things we need. 
+
+We see the following snippets from the IDD file::
+
+    ! Field-level comments:
+    !
+    ----<snip>----
+    !  \object-list     Name of a list of user-provided object names that are valid
+    !                     entries for this field (used with "\reference")
+    !                     see Zone and BuildingSurface:Detailed objects below for
+    !                     examples.
+    !                  ** Note that a field may have multiple \object-list commands.
+    ----<snip>----
+    !  \reference       Name of a list of names to which this object belongs
+    !                     used with "\type object-list" and with "\object-list"
+    !                     see Zone and BuildingSurface:Detailed objects below for
+    !                     examples:
+    !
+    !                        Zone,
+    !                          A1 , \field Name
+    !                               \type alpha
+    !                               \reference ZoneNames
+    !
+    !                        BuildingSurface:Detailed,
+    !                          A4 , \field Zone Name
+    !                               \note Zone the surface is a part of
+    !                               \type object-list
+    !                               \object-list ZoneNames
+    !
+    !             For each zone, the field "Name" may be referenced
+    !             by other objects, such as BuildingSurface:Detailed, so it is
+    !             commented with "\reference ZoneNames"
+    !             Fields that reference a zone name, such as BuildingSurface:Detailed's
+    !             "Zone Name", are commented as
+    !             "\type object-list" and "\object-list ZoneNames"
+    !             ** Note that a field may have multiple \reference commands.
+    !             ** This is useful if the object belongs to a small specific
+    !             object-list as well as a larger more general object-list.
+
+
+If you read the above, you see that there is a connection between the ZONE object and the BUILDINGSURFACE:DETAILED. Field `Zone Name` BUILDINGSURFACE:DETAILED in points to an object of type ZONE. So how do we find this ZONE object. Our steps would look something like this (playing a little fast and loose with the syntax)
+
+::
+
+    BUILDINGSURFACE:DETAILED.Zone_Name.object-list --> ZoneName
+    
+    If we search through all the objects we find that
+    
+    ZONE.Name.reference --> ZoneNames
+    
+The problem here is that we have to search through all the objects, which can be expensive. Eppy has an index that makes this quicker::
+
+    print idf.idd_index['ref2names']['ZoneNames']    
+    
+    set([u'ZONE'])
+
+the function *get_referenced_object* uses the indexing to function quickly
+    
+Exploring further::
+
+    print idf.idd_index.keys()
+    
+    ['ref2names', 'name2refs']
+
+The other index `name2refs` turned out to be less useful than expected. We will ignore it for now
+
+Also ... the description in this section is badly written. Rewrite it later.
+
+Below are some functions that use indexing (or should use indexing)
+
+idfobj.get_referenced_object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Let us set up try this function::
+
+    construction = idf.idfobjects['construction'.upper()][0]
+    print construction
+    
+    Construction,             
+        ROOF-1,                   !- Name
+        RG01,                     !- Outside Layer
+        BR01,                     !- Layer 2
+        IN46,                     !- Layer 3
+        WD01;                     !- Layer 4
+
+Now let us get the material in *Layer 2* using function get_referenced_object()::
+
+    material = construction.get_referenced_object(u'Layer_2')
+    print material
+    
+    Material,                 
+        BR01,                     !- Name
+        VeryRough,                !- Roughness
+        0.0094999997,             !- Thickness
+        0.162,                    !- Conductivity
+        1121.0,                   !- Density
+        1464.0,                   !- Specific Heat
+        0.9,                      !- Thermal Absorptance
+        0.7,                      !- Solar Absorptance
+        0.7;                      !- Visible Absorptance
+        
+This function works fast since the search in this direction is indexed        
+
+idfobj.getreferingobjs
+~~~~~~~~~~~~~~~~~~~~~~
+
+Now let us work in the reverse direction and see what objects use this Material::
+
+    usedby = material.getreferingobjs()
+    print usedby
+
+    [
+    Construction,             
+        ROOF-1,                   !- Name
+        RG01,                     !- Outside Layer
+        BR01,                     !- Layer 2
+        IN46,                     !- Layer 3
+        WD01;                     !- Layer 4
+    ]
+    
+Note that *getreferingobjs* returns a list, since more than one construction can use the material. This function works slowly since the search in this direction is not indexed and it has to search through the entire file
+
+Editing Note
+------------
+
+A lot of the above sections should not be in developer documentation. It should be in a new chapter in the user documentation called *Advanced Functionality*. Developer documentation should show how it is implemented.
+
+
